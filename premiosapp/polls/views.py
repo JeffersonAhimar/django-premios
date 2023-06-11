@@ -1,4 +1,5 @@
 from typing import Any
+from django.db import models
 from django.db.models.query import QuerySet
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
@@ -34,14 +35,23 @@ class IndexView(generic.ListView):
     context_object_name = "latest_question_list"
 
     def get_queryset(self):
-        """Return the last five published questions"""
+        '''Return the last five published questions'''
         return Question.objects.filter(pub_date__lte=timezone.now()).order_by("-pub_date")[:5]  # lte = less than or equal to
+
+
 class DetailView(generic.DetailView):
     model = Question
     template_name = "polls/detail.html"
 
+    def get_queryset(self):
+        '''Excludes any question that aren't published yet'''
+        return Question.objects.filter(pub_date__lte=timezone.now())
+        
+
+
 class ResultView(DetailView):
     template_name = "polls/results.html"
+
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
